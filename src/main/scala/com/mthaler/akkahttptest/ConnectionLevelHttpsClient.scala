@@ -40,10 +40,7 @@ object ConnectionLevelHttpsClient extends App {
   val trustfulClientContext: HttpsContext =
     HttpsContext(trustfulSslContext)
 
-  val allHostsValid = new HostnameVerifier() {
-    override def verify(s: String, sslSession: SSLSession): Boolean = true
-  }
-  HttpsURLConnection.setDefaultHostnameVerifier(allHostsValid)
+  HttpsURLConnection.setDefaultHostnameVerifier(new AllHostsValid)
 
 
   val connectionFlow: Flow[HttpRequest, HttpResponse, Future[Http.OutgoingConnection]] =
