@@ -1,7 +1,7 @@
 package com.mthaler.akkahttptest
 
 import java.security.cert.X509Certificate
-import javax.net.ssl.{KeyManager, X509TrustManager, SSLContext}
+import javax.net.ssl._
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.{HttpsContext, Http}
@@ -10,11 +10,15 @@ import akka.http.scaladsl.model.headers.{BasicHttpCredentials, Authorization}
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.{Sink, Source, Flow}
+import com.typesafe.config.ConfigFactory
 
 import scala.concurrent.Future
 
 object ConnectionLevelHttpsClient extends App {
-  implicit val system = ActorSystem()
+
+  val config = ConfigFactory.parseURL(getClass.getResource("httpsclient.conf"))
+
+  implicit val system = ActorSystem("ConnectionLevelHttpsClient", config)
   implicit val materializer = ActorMaterializer()
   implicit val ec = system.dispatcher
 
@@ -36,8 +40,14 @@ object ConnectionLevelHttpsClient extends App {
   val trustfulClientContext: HttpsContext =
     HttpsContext(trustfulSslContext)
 
+  val allHostsValid = new HostnameVerifier() {
+    override def verify(s: String, sslSession: SSLSession): Boolean = true
+  }
+  HttpsURLConnection.setDefaultHostnameVerifier(allHostsValid)
+
+
   val connectionFlow: Flow[HttpRequest, HttpResponse, Future[Http.OutgoingConnection]] =
-    Http().outgoingConnectionTls("localhost", 6443, httpsContext = Some(trustfulClientContext))
+    Http().outgoingConnectionTls("127.0.0.1", 6443, httpsContext = Some(trustfulClientContext))
   val responseFuture: Future[String] =
     Source.single(HttpRequest(uri = "/test.txt", headers = List(auth)))
       .via(connectionFlow)
@@ -52,6 +62,6 @@ object ConnectionLevelHttpsClient extends App {
     case result => println(result)
   }
   responseFuture.onFailure {
-    case ex => println("Exception: " + ex)
+    case ex => ex.printStackTrace()
   }
 }
