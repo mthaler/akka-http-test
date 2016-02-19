@@ -20,3 +20,8 @@ To create a KeyStore in PKCS12 Format, do:
 ```
 openssl pkcs12 -export -in cert.pem -out mykeystore.pkcs12  -name akka-http-test -noiter -nomaciter
 ```
+## HttpsServer and ConnectionLevelHttpsClient
+
+HttpsServer and ConnectionLevelHttpsClient demonstrate how to write a simple HTTPS server and client. HttpsServer uses a self-signed certificate and ConnectionLevelHttpsClient ignores the certificate and disables hostname verification.
+
+* WARNING: * do not do this with production code! But this might be useful e.g. for writung a a test server that provides a REST interface used for testing.
