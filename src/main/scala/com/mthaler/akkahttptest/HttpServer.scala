@@ -10,6 +10,7 @@ object HttpServer extends App {
 
   implicit val system = ActorSystem("system")
   implicit val mat = ActorMaterializer()
+  implicit val ec = system.dispatcher
 
   // credentials used to authenticate users
   val credentials = Map("test" -> ("test", Set("user")))
@@ -42,4 +43,8 @@ object HttpServer extends App {
     port = 8888,
     handler = route
   )
+
+  binding onFailure {
+    case ex: Exception => println("Failed to bind to port 8888, reason {}", ex)
+  }
 }
