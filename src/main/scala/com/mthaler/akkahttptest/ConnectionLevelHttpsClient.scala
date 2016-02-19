@@ -47,7 +47,7 @@ object ConnectionLevelHttpsClient extends App {
 
 
   val connectionFlow: Flow[HttpRequest, HttpResponse, Future[Http.OutgoingConnection]] =
-    Http().outgoingConnectionTls("127.0.0.1", 6443, httpsContext = Some(trustfulClientContext))
+    Http().outgoingConnectionTls("localhost", 6443, httpsContext = Some(trustfulClientContext))
   val responseFuture: Future[String] =
     Source.single(HttpRequest(uri = "/test.txt", headers = List(auth)))
       .via(connectionFlow)
